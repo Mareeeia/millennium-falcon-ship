@@ -34,7 +34,7 @@ public class OnboardComputer {
                     .filter(entry -> shouldVisitPlanet(entry, currentShipState, visitedPlanets, empire.getCountdown()))
                     .forEach(entry -> updateStatesQueue(entry, currentShipState, empire, possibleShipMoves));
 
-            // Alternatively, if we can afford to and it makes sense, wait in place/refuel
+            // Alternatively, if we can afford to, and it makes sense, wait in place/refuel
             if (currentShipState.canAffordToWait(empire.getCountdown())) {
                 int hunters = getBountyHunters(currentShipState.getTime() + 1, currentShipState.getPlanetName(), empire);
                 possibleShipMoves.add(ShipState.builder()

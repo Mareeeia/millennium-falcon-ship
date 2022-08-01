@@ -25,7 +25,6 @@ public class DBUtil {
         }
         Connection conn = null;
         try {
-//            String url = "jdbc:sqlite:" + DBUtil.class.getClassLoader().getResource("universe_maps/" + fileName);
             String url = "jdbc:sqlite::resource:" + "universe_maps/" + fileName;
             conn = DriverManager.getConnection(url);
             var statement = conn.createStatement();
@@ -58,5 +57,4 @@ public class DBUtil {
 
         return new UniverseMap(planetsAndDistances);
     }
-
 }
