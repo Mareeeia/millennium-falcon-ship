@@ -1,16 +1,19 @@
 package com.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
-import org.apache.commons.lang3.tuple.Pair;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @Builder
+@Jacksonized
 public class Empire {
-    @Builder.Default
-    private List<Pair<String, Integer>> bountyHunters = new ArrayList<>();
     private int countdown;
+    @Builder.Default
+    @JsonProperty("bounty_hunters")
+    private List<BountyHunter> bountyHunters = new ArrayList<>();
 }

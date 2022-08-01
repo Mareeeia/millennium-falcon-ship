@@ -3,7 +3,6 @@ package com.core;
 import com.model.Planet;
 import com.model.UniverseMap;
 import lombok.Getter;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
@@ -13,29 +12,9 @@ import java.util.*;
 @Getter
 public class DijkstraShortestPath {
 
-    // delete all nodes with more length than fuel tank
-    // run dijkstra
-    // calculate refueling on shortest path
-    private Map<String, Planet> planetMap = new HashMap<>();
-
-    public DijkstraShortestPath(UniverseMap universeMap) {
-        initPlanets(universeMap);
-    }
-
-    private void initPlanets(UniverseMap universeMap) {
-        universeMap.getPlanets().forEach(this::makePlanet);
-    }
-
-    private void makePlanet(Pair<String, String> route, int weight) {
-        var startPlanet = planetMap.getOrDefault(route.getLeft(), new Planet(route.getLeft()));
-        var destinationPlanet = planetMap.getOrDefault(route.getRight(), new Planet(route.getRight()));
-        startPlanet.addAdjacentPlanet(destinationPlanet, weight);
-        destinationPlanet.addBackwardsAdjacentPlanet(startPlanet, weight);
-        this.planetMap.put(route.getLeft(), startPlanet);
-        this.planetMap.put(route.getRight(), destinationPlanet);
-    }
-
-    public int calculateShortestPath(String source, String  destination) {
+    public static Map<String, Planet> mapOutDistancesToDestination(UniverseMap universeMap,
+                                                                   String destination) {
+        var planetMap = PlanetMapper.makePlanetMap(universeMap);
         planetMap.get(destination).setHeuristicDistance(0);
         Set<Planet> settledPlanets = new HashSet<>();
         Queue<Planet> unsettledPlanets = new PriorityQueue<>(List.of(planetMap.get(destination)));
@@ -49,10 +28,15 @@ public class DijkstraShortestPath {
                     });
             settledPlanets.add(currentPlanet);
         }
+        return planetMap;
+    }
+
+    public static int calculateShortestPath(UniverseMap universeMap, String source, String destination) {
+        var planetMap = mapOutDistancesToDestination(universeMap, destination);
         return planetMap.get(source).getHeuristicDistance();
     }
 
-    private void evaluateDistanceAndPath(Planet adjacentPlanet, Integer distance, Planet sourcePlanet) {
+    private static void evaluateDistanceAndPath(Planet adjacentPlanet, Integer distance, Planet sourcePlanet) {
         int newDistance = sourcePlanet.getHeuristicDistance() + distance;
         if (newDistance < adjacentPlanet.getHeuristicDistance()) {
             adjacentPlanet.setHeuristicDistance(newDistance);

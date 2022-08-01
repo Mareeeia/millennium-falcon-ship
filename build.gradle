@@ -17,10 +17,16 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.shell:spring-shell-starter:2.1.0'
     implementation 'org.apache.commons:commons-lang3'
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    implementation 'com.oracle.database.jdbc:ojdbc8:21.5.0.0'
+    implementation 'com.oracle.database.jdbc:ucp:21.5.0.0'
+    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
 
     testCompileOnly 'org.projectlombok:lombok:1.18.24'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'

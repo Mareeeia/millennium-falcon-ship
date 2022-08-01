@@ -13,15 +13,13 @@ public class DijkstraShortestPathTest {
 
     @Test
     public void getShortestPathSmallMap() {
-        DijkstraShortestPath dijkstraShortestPath = new DijkstraShortestPath(makeSmallMap());
-        int path = dijkstraShortestPath.calculateShortestPath("Tatooine", "Endor");
+        int path = DijkstraShortestPath.calculateShortestPath(makeSmallMap(), "Tatooine", "Endor");
         assertEquals(5, path);
     }
 
     @Test
     public void getShortestPathLargerMap() {
-        DijkstraShortestPath dijkstraShortestPath = new DijkstraShortestPath(makeLargerMap());
-        int path = dijkstraShortestPath.calculateShortestPath("Tatooine", "Endor");
+        int path = DijkstraShortestPath.calculateShortestPath(makeLargerMap(), "Tatooine", "Endor");
         assertEquals(7, path);
     }
 
@@ -31,7 +29,7 @@ public class DijkstraShortestPathTest {
     }
 
     private UniverseMap makeLargerMap() {
-        return  new UniverseMap (Map.of(Pair.of("Tatooine", "Dagobah"), 6,
+        return new UniverseMap(Map.of(Pair.of("Tatooine", "Dagobah"), 6,
                 Pair.of("Dagobah", "Endor"), 4,
                 Pair.of("Dagobah", "Hoth"), 1,
                 Pair.of("Hoth", "Endor"), 1,
