@@ -33,3 +33,20 @@ give-me-the-odds -F src/main/resources/falcon_config/falcon_initial_config.json 
 
 To use the frontend, replace the `resources/falcon_initial_config.json` with your falcon config and upload your empire
 file to the program.
+
+## General architecture
+
+`DijkstraShortestPath` - class used as a heuristic to evaluate the best case scenario for arrival to the destination
+from every planet. This lets us know which routes to exclude if they aren't viable.
+
+`OnboardComputer` - main business logic. Simulates the ship movement.
+
+`PlanetMapper` - turns the object we got from UniverseMap into a graph-like structure of planets.
+
+`UploadController` - code used for uploading empire intercepts, works with the css and html files in the resources.
+
+`FileUtil` and `DBUtil` - util classes for acquiring data from json/db.
+
+`model` package - contains various model/data classes.
+
+`cli` package - contains the logic for the CLI.
