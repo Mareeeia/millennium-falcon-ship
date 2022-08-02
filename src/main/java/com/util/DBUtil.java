@@ -19,13 +19,15 @@ public class DBUtil {
 
     private static final String QUERY = "SELECT * FROM routes";
 
-    public static UniverseMap getUniverseMap(String fileName) {
-        if (!fileName.endsWith(".db")) {
-            return null;
-        }
+    private static final String DEFAULT_DB = "jdbc:sqlite::resource:universe_maps/universe.db";
+
+    public static UniverseMap getUniverseMap(String filePath) {
         Connection conn = null;
         try {
-            String url = "jdbc:sqlite::resource:" + "universe_maps/" + fileName;
+            String url = "jdbc:sqlite:" + filePath;
+            if (filePath.equals("DEFAULT")) {
+                url = DEFAULT_DB;
+            }
             conn = DriverManager.getConnection(url);
             var statement = conn.createStatement();
             ResultSet resultSet = statement.executeQuery(QUERY);
@@ -33,6 +35,7 @@ public class DBUtil {
             return universeMapFromResultSet(resultSet);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         } finally {
             try {
                 if (conn != null) {
@@ -42,7 +45,6 @@ public class DBUtil {
                 System.out.println(ex.getMessage());
             }
         }
-        return new UniverseMap(Map.of());
     }
 
     private static UniverseMap universeMapFromResultSet(ResultSet resultSet) throws SQLException {

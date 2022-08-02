@@ -1,16 +1,33 @@
 package com.core;
 
 import com.model.*;
+import lombok.NonNull;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * This class employs the A* algorithm and uses Dijkstra as a heuristic to determine
+ * if taking a certain path is ever viable, e.g. if we are at Planet A and have travelled for 5 days
+ * and by Dijkstra there are at least 6 more days to the destination, then we can't reach the destination in 10 days,
+ * so we can discard the path altogether.
+ */
 @Component
+@EnableAutoConfiguration
 public class OnboardComputer {
 
-    public int giveMeTheOdds(MillenniumFalconSettings settings, Empire empire, UniverseMap universeMap) {
-        var planetMap = DijkstraShortestPath.mapOutDistancesToDestination(universeMap, settings.getArrival());
+    private final DijkstraShortestPath dijkstraShortestPath;
+
+    public OnboardComputer(DijkstraShortestPath dijkstraShortestPath) {
+        this.dijkstraShortestPath = dijkstraShortestPath;
+    }
+
+    public int giveMeTheOdds(@NonNull MillenniumFalconSettings settings,
+                             @NonNull Empire empire,
+                             @NonNull UniverseMap universeMap) {
+        var planetMap = this.dijkstraShortestPath.mapOutDistancesToDestination(universeMap, settings.getArrival());
         return calculateMissionSuccessChance(settings.getDeparture(),
                 settings.getArrival(),
                 settings.getAutonomy(),
@@ -23,16 +40,25 @@ public class OnboardComputer {
                                               Integer maxFuel,
                                               Empire empire,
                                               Map<String, Planet> planetMap) {
-        Set<String> visitedPlanets = new HashSet<>(); //TODO: If we use greedy option, the first arrival will be the most efficient
+        Set<String> visitedPlanets = new HashSet<>();
         List<ShipState> arrivals = new ArrayList<>();
+
         Queue<ShipState> possibleShipMoves = new PriorityQueue<>(List.of(
                 new ShipState(planetMap.get(source), maxFuel, 0, getBountyHunters(0, source, empire))));
         while (!possibleShipMoves.isEmpty()) {
             // Poll ship state from priority queue and add viable next moves to queue
             ShipState currentShipState = possibleShipMoves.poll();
             currentShipState.getAdjacentPlanets().entrySet().stream()
-                    .filter(entry -> shouldVisitPlanet(entry, currentShipState, visitedPlanets, empire.getCountdown()))
-                    .forEach(entry -> updateStatesQueue(entry, currentShipState, empire, possibleShipMoves));
+                    .filter(entry -> shouldVisitPlanet(entry.getKey(),
+                            entry.getValue(),
+                            currentShipState,
+                            visitedPlanets,
+                            empire.getCountdown()))
+                    .forEach(entry -> updateNextMovesQueue(entry.getKey(),
+                            entry.getValue(),
+                            currentShipState,
+                            empire,
+                            possibleShipMoves));
 
             // Alternatively, if we can afford to, and it makes sense, wait in place/refuel
             if (currentShipState.canAffordToWait(empire.getCountdown())) {
@@ -44,34 +70,37 @@ public class OnboardComputer {
                         .hunterEncounters(currentShipState.getHunterEncounters() + hunters).build());
             }
             if (currentShipState.getPlanetName().equals(destination)) {
-                arrivals.add(currentShipState);
+                return calculateSuccessChance(List.of(currentShipState));
             }
             visitedPlanets.add(currentShipState.getPlanetName());
         }
-        return calculateSuccessChance(arrivals);
+        return 0;
     }
 
-    private void updateStatesQueue(Map.Entry<Planet, Integer> planetAndDistance,
-                                   ShipState currentShipState,
-                                   Empire empire,
-                                   Queue<ShipState> possibleShipMoves) {
-        int hunters = getBountyHunters(currentShipState.getTime() + planetAndDistance.getValue(), planetAndDistance.getKey().getPlanetName(), empire);
+    private void updateNextMovesQueue(Planet planet,
+                                      Integer distance,
+                                      ShipState currentShipState,
+                                      Empire empire,
+                                      Queue<ShipState> possibleShipMoves) {
+        int hunters = getBountyHunters(currentShipState.getTime() + distance, planet.getPlanetName(), empire);
         possibleShipMoves.add(ShipState.builder()
-                .planet(planetAndDistance.getKey())
-                .fuel(currentShipState.getFuel() - planetAndDistance.getValue())
-                .time(currentShipState.getTime() + planetAndDistance.getValue())
+                .planet(planet)
+                .fuel(currentShipState.getFuel() - distance)
+                .time(currentShipState.getTime() + distance)
                 .hunterEncounters(currentShipState.getHunterEncounters() + hunters).build());
     }
 
-    private boolean shouldVisitPlanet(Map.Entry<Planet, Integer> planetAndDistance,
+    private boolean shouldVisitPlanet(Planet planet,
+                                      Integer distance,
                                       ShipState currentShipState,
                                       Set<String> visitedPlanets,
                                       int countdown) {
-        return !visitedPlanets.contains(planetAndDistance.getKey().getPlanetName())
-                && currentShipState.hasEnoughFuel(planetAndDistance.getValue())
+        return !visitedPlanets.contains(planet.getPlanetName())
+                && planet.getHeuristicDistance() != Integer.MAX_VALUE  //It's possible to reach
+                && currentShipState.hasEnoughFuel(distance)
                 && canReachDestinationInTime(currentShipState,
-                planetAndDistance.getKey(),
-                planetAndDistance.getValue(),
+                planet,
+                distance,
                 countdown);
     }
 
@@ -86,12 +115,13 @@ public class OnboardComputer {
             return 0;
         }
         double encounterChance = 0;
-        for (int i = 0; i < arrivals.get(0).getHunterEncounters(); i++) {
+        ShipState optimalArrival = arrivals.get(0); // by the priority queue first arrival should be optimal
+        for (int i = 0; i < optimalArrival.getHunterEncounters(); i++) {
             encounterChance += Math.pow(9, i) / Math.pow(10, i + 1);
         }
         return (int) Math.round((1D - encounterChance) * 100);
     }
-
+    
     private int getBountyHunters(int time, String planetName, Empire empire) {
         var daySet = empire.getBountyHunters().stream()
                 .filter(entry -> entry.getPlanet().equals(planetName))

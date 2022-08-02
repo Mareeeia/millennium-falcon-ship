@@ -2,25 +2,34 @@ package com.core;
 
 import com.model.Planet;
 import com.model.UniverseMap;
-import lombok.Getter;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 /**
- * Used as a heuristic in the A*-like algorithm.
+ * Used as a heuristic in the A* algorithm.
  */
-@Getter
+@Component
+@EnableAutoConfiguration
 public class DijkstraShortestPath {
 
-    public static Map<String, Planet> mapOutDistancesToDestination(UniverseMap universeMap,
-                                                                   String destination) {
-        var planetMap = PlanetMapper.makePlanetMap(universeMap);
+    private final PlanetMapper planetMapper;
+
+    public DijkstraShortestPath(PlanetMapper planetMapper) {
+        this.planetMapper = planetMapper;
+    }
+
+    public Map<String, Planet> mapOutDistancesToDestination(UniverseMap universeMap,
+                                                            String destination) {
+        var planetMap = this.planetMapper.makePlanetMap(universeMap);
         planetMap.get(destination).setHeuristicDistance(0);
         Set<Planet> settledPlanets = new HashSet<>();
         Queue<Planet> unsettledPlanets = new PriorityQueue<>(List.of(planetMap.get(destination)));
         while (!unsettledPlanets.isEmpty()) {
             Planet currentPlanet = unsettledPlanets.poll();
-            currentPlanet.getBackwardsAdjacent().entrySet().stream() //TODO: think of more elegant backwards
+            // We use Dijkstra to get the distance from every planet to the destination
+            currentPlanet.getAdjacentPlanets().entrySet().stream()
                     .filter(entry -> !settledPlanets.contains(entry.getKey()))
                     .forEach(entry -> {
                         evaluateDistanceAndPath(entry.getKey(), entry.getValue(), currentPlanet);
@@ -31,12 +40,12 @@ public class DijkstraShortestPath {
         return planetMap;
     }
 
-    public static int calculateShortestPath(UniverseMap universeMap, String source, String destination) {
+    public int calculateShortestPath(UniverseMap universeMap, String source, String destination) {
         var planetMap = mapOutDistancesToDestination(universeMap, destination);
         return planetMap.get(source).getHeuristicDistance();
     }
 
-    private static void evaluateDistanceAndPath(Planet adjacentPlanet, Integer distance, Planet sourcePlanet) {
+    private void evaluateDistanceAndPath(Planet adjacentPlanet, Integer distance, Planet sourcePlanet) {
         int newDistance = sourcePlanet.getHeuristicDistance() + distance;
         if (newDistance < adjacentPlanet.getHeuristicDistance()) {
             adjacentPlanet.setHeuristicDistance(newDistance);

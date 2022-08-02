@@ -28,6 +28,13 @@ public class ShipState implements Comparable<ShipState> {
         return this.getHeuristicDistance() + time < countdown;
     }
 
+    /**
+     * We use this as a metric to power our PriorityQueue. If we can afford to, prioritise avoiding hunters.
+     * If no hunters to be found, prioritise time limit.
+     *
+     * @param shipState the object to be compared.
+     * @return
+     */
     @Override
     public int compareTo(ShipState shipState) {
         var hunterComparator = Integer.compare(hunterEncounters, shipState.hunterEncounters);

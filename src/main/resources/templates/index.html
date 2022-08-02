@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>C3PO</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+
+<div class="fade"></div>
+<section>
+    <div class="container">
+        <div class="row">
+            <div class="upload">
+                <div class="img-div">
+                    <h2 class="txt">What are the odds?</h2>
+                    <form enctype="multipart/form-data" method="post" th:action="@{/upload}">
+                        <div class="form-group">
+                            <input class="form-control-file" name="file" type="file">
+                        </div>
+                        <button class="upload-button" type="submit">Upload Empire Intercept</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="star-wars">
+
+    <div class="crawl">
+
+        <div class="title">
+            <p>C3PO</p>
+            <h1>Upload empire intercept <br> to calculate success chance</h1>
+        </div>
+
+        <p th:if="${message ne null}" th:text="${message}"></p>
+
+    </div>
+
+</section>
+
+</body>
+</html>

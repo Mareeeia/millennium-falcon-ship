@@ -1,51 +1,40 @@
 package com.util;
 
+import com.model.UniverseMap;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 /**
  * This class is used to retrieve a file from DB.
  *
  * @author w3spoint
  */
 public class DBUtilTest {
-//    public static void main(String[] args) {
-//        Connection conn = null;
-//        PreparedStatement preparedStatement = null;
-//
-//        String query = "select * from FILESTORE " +
-//                "where FILE_ID = 2";
-//
-//        try {
-//            //get connection
-//            conn = DBUtil.getConnection();
-//
-//            //create preparedStatement
-//            preparedStatement =
-//                    conn.prepareStatement(query);
-//
-//            //execute query
-//            ResultSet resultSet =
-//                    preparedStatement.executeQuery();
-//
-//            resultSet.next();
-//
-//            Clob clob = resultSet.getClob(2);
-//            Reader reader = clob.getCharacterStream();
-//
-//            FileWriter fileWriter =
-//                    new FileWriter("savedFile.txt");
-//
-//            int i;
-//            while ((i = reader.read()) != -1) {
-//                fileWriter.write((char) i);
-//            }
-//
-//            System.out.println("File retrieved successfully.");
-//
-//            //close connection
-//            fileWriter.close();
-//            preparedStatement.close();
-//            conn.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+
+    @Test
+    public void testReadsDBFromFile() {
+        String path = DBUtilTest.class.getClassLoader().getResource("universe_maps/universe.db").getPath();
+        UniverseMap universeMap = DBUtil.getUniverseMap(path);
+
+        assertThat(universeMap.getPlanets(), equalTo(makeLargerMap().getPlanets()));
+    }
+
+    @Test
+    public void testWrongPathThrowsRE() {
+        var thrown = assertThrows(RuntimeException.class, () -> DBUtil.getUniverseMap("wrong/path.db"));
+    }
+
+    private UniverseMap makeLargerMap() {
+        return new UniverseMap(Map.of(Pair.of("Tatooine", "Dagobah"), 6,
+                Pair.of("Dagobah", "Endor"), 4,
+                Pair.of("Dagobah", "Hoth"), 1,
+                Pair.of("Hoth", "Endor"), 1,
+                Pair.of("Tatooine", "Hoth"), 6));
+    }
 }

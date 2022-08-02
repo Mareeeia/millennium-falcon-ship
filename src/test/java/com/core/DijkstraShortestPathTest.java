@@ -10,16 +10,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DijkstraShortestPathTest {
 
+    private final DijkstraShortestPath dijkstraShortestPath = new DijkstraShortestPath(new PlanetMapper());
 
     @Test
     public void getShortestPathSmallMap() {
-        int path = DijkstraShortestPath.calculateShortestPath(makeSmallMap(), "Tatooine", "Endor");
+        int path = dijkstraShortestPath.calculateShortestPath(makeSmallMap(), "Tatooine", "Endor");
         assertEquals(5, path);
     }
 
     @Test
     public void getShortestPathLargerMap() {
-        int path = DijkstraShortestPath.calculateShortestPath(makeLargerMap(), "Tatooine", "Endor");
+        int path = dijkstraShortestPath.calculateShortestPath(makeLargerMap(), "Tatooine", "Endor");
         assertEquals(7, path);
     }
 
